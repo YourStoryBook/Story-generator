@@ -166,192 +166,23 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>📚 Story Generator</h1>
-    <p class="subtitle">Erstelle eine personalisierte Geschichte für dein Kind</p>
-    <div id="errorBox" class="error hidden"></div>
-    <div id="successBox" class="success hidden"></div>
+  <div style="padding:40px">
+    <h1>Test</h1>
     <form id="storyForm">
-      <!-- Bild Upload -->
-      <div class="form-group">
-        <label for="image">📸 Foto des Kindes</label>
-        <input type="file" id="image" accept="image/jpeg,image/png" required>
-        <small>Max 5MB, JPG oder PNG</small>
-      </div>
-      <!-- Kind-Name -->
-      <div class="form-group">
-        <label for="childName">👶 Name des Kindes</label>
-        <input type="text" id="childName" placeholder="z.B. Emma" maxlength="50" required>
-      </div>
-      <!-- Alter -->
-      <div class="form-group">
-        <label for="age">🎂 Alter</label>
-        <select id="age" required>
-          <option value="">-- Wähle Alter --</option>
-          <option value="3">3 Jahre</option>
-          <option value="4">4 Jahre</option>
-          <option value="5">5 Jahre</option>
-          <option value="6">6 Jahre</option>
-          <option value="7">7 Jahre</option>
-          <option value="8">8 Jahre</option>
-          <option value="9">9 Jahre</option>
-          <option value="10">10 Jahre</option>
-        </select>
-      </div>
-      <!-- Thema -->
-      <div class="form-group">
-        <label for="theme">🎯 Thema</label>
-        <select id="theme" required>
-          <option value="">-- Wähle Thema --</option>
-          <option value="adventure">Abenteuer</option>
-          <option value="kindness">Freundlichkeit</option>
-          <option value="courage">Mut</option>
-          <option value="friendship">Freundschaft</option>
-          <option value="magic">Magie</option>
-        </select>
-      </div>
-      <!-- Stil -->
-      <div class="form-group">
-        <label>🎨 Illustrationsstil</label>
-        <div class="radio-group">
-          <div class="radio-option">
-            <input type="radio" id="cartoon" name="style" value="cartoon" required>
-            <label for="cartoon">Cartoon</label>
-          </div>
-          <div class="radio-option">
-            <input type="radio" id="illustrated" name="style" value="illustrated">
-            <label for="illustrated">Illustriert</label>
-          </div>
-          <div class="radio-option">
-            <input type="radio" id="comic" name="style" value="comic">
-            <label for="comic">Comic</label>
-          </div>
-        </div>
-      </div>
-      <!-- GDPR Checkbox -->
-      <div class="checkbox-group">
-        <input type="checkbox" id="consent" required>
-        <label for="consent">
-          ✓ Ich bestätige, dass ich der Erziehungsberechtigte bin und akzeptiere,
-          dass das Foto nach der Verarbeitung gelöscht wird. Ich akzeptiere die Datenschutzerklärung.
-        </label>
-      </div>
-      <button type="submit" id="submitBtn">Generiere Geschichte →</button>
+      <button id="submitBtn">Klick mich</button>
     </form>
-    <div id="loadingBox" class="hidden">
-      <div class="loading">
-        <div class="spinner"></div>
-        <p>Deine Geschichte wird erstellt...</p>
-        <small style="color: #999; margin-top: 10px;">(Das kann 1-3 Minuten dauern)</small>
-        <small style="color: #c33; margin-top: 10px;">⚠️ Bitte schließe diese Seite NICHT.</small>
-      </div>
-    </div>
-    <div id="downloadBox" class="hidden" style="text-align: center;">
-      <h2 style="color: #667eea; margin-bottom: 20px;">✨ Deine Geschichte ist fertig!</h2>
-      <button id="downloadBtn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-        📥 PDF jetzt herunterladen
-      </button>
-      <p style="color: #999; margin-top: 15px; font-size: 12px;">
-        Der Download-Link ist 24 Stunden gültig.
-      </p>
-    </div>
   </div>
+
   <script>
-    // ===== KONFIGURATION =====
-    // Diese Values findest du im Supabase Dashboard
-    const SUPABASE_URL = "https://mkeehnubilnsbjafqqkc.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rZWVobnViaWxuc2JqYWZxcWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY2ODQwNjksImV4cCI6MjA4MjI2MDA2OX0.BtCpQ19OLvAPa8e5NA93Wmw_x4MQtOSfRdylPnqHpgk";  // Dein anon public key
+    console.log("JS START");
 
-    // Initialisiere Supabase Client
-    const { createClient } = window.supabase;
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const form = document.getElementById("storyForm");
 
-    // ===== DOM ELEMENTE =====
-    const storyForm = document.getElementById("storyForm");
-    const loadingBox = document.getElementById("loadingBox");
-    const downloadBox = document.getElementById("downloadBox");
-    const downloadBtn = document.getElementById("downloadBtn");
-    const errorBox = document.getElementById("errorBox");
-    const submitBtn = document.getElementById("submitBtn");
-
-    // ===== EVENT LISTENER =====
-    storyForm.addEventListener("submit", handleSubmit);
-
-    async function handleSubmit(e) {
+    form.addEventListener("submit", function (e) {
       e.preventDefault();
-
-      // 1. Validiere Consent
-      const consent = document.getElementById("consent").checked;
-      if (!consent) {
-        showError("❌ Bitte bestätige, dass du der Erziehungsberechtigte bist.");
-        return;
-      }
-
-      // 2. Validiere Dateiformat
-      const imageFile = document.getElementById("image").files[0];
-      if (!imageFile) {
-        showError("❌ Bitte wähle ein Foto aus.");
-        return;
-      }
-      if (imageFile.size > 5 * 1024 * 1024) {
-        showError("❌ Datei zu groß (max 5MB).");
-        return;
-      }
-
-      // 3. UI wechseln
-      submitBtn.disabled = true;
-      storyForm.classList.add("hidden");
-      loadingBox.classList.remove("hidden");
-
-      try {
-        // 4. Sende POST Request an Supabase Function
-        const response = await fetch(
-          `${SUPABASE_URL}/functions/v1/generate`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-            },
-            body: JSON.stringify({
-              image: await imageFile.text(),  // HINWEIS: Das ist vereinfacht
-              childName: document.getElementById("childName").value,
-              age: document.getElementById("age").value,
-              theme: document.getElementById("theme").value,
-              style: document.querySelector('input[name="style"]:checked').value,
-              consent: true
-            })
-          }
-        );
-
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || "Backend-Fehler");
-        }
-
-        // 5. Download-Link anzeigen
-        downloadBtn.onclick = () => {
-          window.location.href = data.downloadUrl;
-        };
-
-        loadingBox.classList.add("hidden");
-        downloadBox.classList.remove("hidden");
-      } catch (err) {
-        console.error("Fehler:", err);
-        showError(`❌ Fehler: ${err.message}`);
-        storyForm.classList.remove("hidden");
-        loadingBox.classList.add("hidden");
-        submitBtn.disabled = false;
-      }
-    }
-
-    function showError(msg) {
-      errorBox.textContent = msg;
-      errorBox.classList.remove("hidden");
-      setTimeout(() => {
-        errorBox.classList.add("hidden");
-      }, 5000);
-    }
+      console.log("FORM SUBMIT OK");
+      alert("Submit funktioniert!");
+    });
   </script>
 </body>
 </html>
