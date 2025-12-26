@@ -173,16 +173,48 @@
     </form>
   </div>
 
-  <script>
-    console.log("JS START");
+ <script>
+  console.log("JS START");
 
-    const form = document.getElementById("storyForm");
+  const SUPABASE_URL = "https://mkeehnubilnsbjafqqkc.supabase.co";
+  const SUPABASE_ANON_KEY = "DEIN_ANON_PUBeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rZWVobnViaWxuc2JqYWZxcWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY2ODQwNjksImV4cCI6MjA4MjI2MDA2OX0.BtCpQ19OLvAPa8e5NA93Wmw_x4MQtOSfRdylPnqHpgkLIC_KEY";
 
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      console.log("FORM SUBMIT OK");
-      alert("Submit funktioniert!");
-    });
-  </script>
+  const form = document.getElementById("storyForm");
+  const loadingBox = document.getElementById("loadingBox");
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    console.log("SUBMIT OK");
+
+    loadingBox.classList.remove("hidden");
+
+    try {
+      console.log("Sende Request an Supabase…");
+
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/generate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({
+            test: true
+          })
+        }
+      );
+
+      const data = await res.json();
+      console.log("Antwort:", data);
+
+      alert("Request erfolgreich – siehe Console");
+
+    } catch (err) {
+      console.error("FEHLER:", err);
+      alert("Fehler – siehe Console");
+    }
+  });
+</script>
 </body>
 </html>
